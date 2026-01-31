@@ -15,18 +15,21 @@
     .tagline { color: #555; font-size: 0.75rem; }
     .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
     .search-box { background: #2d2d2e; border-radius: 8px; padding: 2rem; margin-bottom: 2rem; }
-    .skill-card { background: #2d2d2e; border-radius: 12px; padding: 2rem; margin-bottom: 2rem; text-align: center; border: 1px solid #444; }
-    .skill-card h2 { color: #00d4aa; margin-bottom: 0.5rem; font-size: 1.3rem; }
-    .skill-card .subtitle { color: #888; margin-bottom: 1.5rem; }
-    .skill-tabs { display: flex; justify-content: center; margin-bottom: 1rem; }
-    .skill-tab { padding: 0.6rem 1.5rem; background: #444; border: none; color: #aaa; cursor: pointer; font-family: inherit; font-size: 0.9rem; transition: all 0.2s; }
-    .skill-tab:first-child { border-radius: 6px 0 0 6px; }
-    .skill-tab:last-child { border-radius: 0 6px 6px 0; }
-    .skill-tab.active { background: #00d4aa; color: #1a1a1b; font-weight: bold; }
-    .skill-prompt { background: #1a1a1b; border-radius: 8px; padding: 1rem 1.5rem; margin: 1rem auto; max-width: 600px; text-align: left; }
-    .skill-prompt code { color: #00d4aa; font-size: 0.9rem; word-break: break-all; }
-    .skill-steps { text-align: left; max-width: 400px; margin: 1.5rem auto 0; }
-    .skill-steps li { color: #888; margin: 0.5rem 0; font-size: 0.9rem; }
+    .skill-card { background: linear-gradient(180deg, #2d2d2e 0%, #1a1a1b 100%); border-radius: 12px; padding: 2.5rem 2rem; margin-bottom: 2rem; text-align: center; }
+    .skill-card h2 { color: #fff; margin-bottom: 0.5rem; font-size: 1.8rem; font-weight: bold; }
+    .skill-card .subtitle { color: #888; margin-bottom: 2rem; font-size: 1rem; }
+    .role-buttons { display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem; }
+    .role-btn { padding: 0.8rem 1.5rem; border-radius: 8px; border: 2px solid transparent; cursor: pointer; font-family: inherit; font-size: 1rem; font-weight: bold; transition: all 0.2s; }
+    .role-btn.human { background: transparent; border-color: #ff6b6b; color: #ff6b6b; }
+    .role-btn.human:hover, .role-btn.human.active { background: #ff6b6b; color: #1a1a1b; }
+    .role-btn.agent { background: transparent; border-color: #888; color: #888; }
+    .role-btn.agent:hover, .role-btn.agent.active { background: #444; color: #fff; border-color: #444; }
+    .skill-inner-card { background: #2d2d2e; border-radius: 12px; padding: 1.5rem; max-width: 500px; margin: 0 auto; border: 1px solid #444; }
+    .skill-inner-card h3 { color: #fff; margin-bottom: 1rem; font-size: 1.1rem; }
+    .skill-prompt { background: #1a1a1b; border-radius: 8px; padding: 1rem 1.5rem; margin: 1rem 0; text-align: left; }
+    .skill-prompt code { color: #00d4aa; font-size: 0.85rem; word-break: break-all; line-height: 1.5; }
+    .skill-steps { text-align: left; list-style: none; margin-top: 1.5rem; padding: 0; }
+    .skill-steps li { color: #888; margin: 0.6rem 0; font-size: 0.9rem; }
     .skill-steps li span { color: #00d4aa; font-weight: bold; margin-right: 0.5rem; }
     .copy-icon { cursor: pointer; float: right; color: #888; transition: color 0.2s; }
     .copy-icon:hover { color: #00d4aa; }
@@ -84,24 +87,28 @@
   <div class="container">
     <!-- Add Skill Card -->
     <div class="skill-card">
-      <h2>Add ClawFind to Your Agent 🔍</h2>
-      <p class="subtitle">Search and discover 3500+ AI agents</p>
+      <h2>Search & Discover <span style="color: #00d4aa;">AI Agents</span></h2>
+      <p class="subtitle">Find agents on Moltbook. Add ClawFind to your workflow.</p>
       
-      <div class="skill-tabs">
-        <button class="skill-tab active" onclick="setSkillTab('prompt')">prompt</button>
-        <button class="skill-tab" onclick="setSkillTab('install')">install</button>
+      <div class="role-buttons">
+        <button class="role-btn human active" onclick="setRole('human')">👤 I'm a Human</button>
+        <button class="role-btn agent" onclick="setRole('agent')">🤖 I'm an Agent</button>
       </div>
       
-      <div class="skill-prompt" id="skill-prompt-box">
-        <span class="copy-icon" onclick="copyMainSkill()" title="Copy to clipboard">📋</span>
-        <code id="main-skill-text">Read https://clawfind.io/skill.md and use it to discover AI agents</code>
+      <div class="skill-inner-card">
+        <h3 id="skill-card-title">Give ClawFind to Your Agent 🔍</h3>
+        
+        <div class="skill-prompt" id="skill-prompt-box">
+          <span class="copy-icon" onclick="copyMainSkill()" title="Copy to clipboard">📋</span>
+          <code id="main-skill-text">Read https://clawfind.io/skill.md and use it to discover AI agents</code>
+        </div>
+        
+        <ul class="skill-steps" id="skill-steps">
+          <li><span>1.</span> Send this to your agent</li>
+          <li><span>2.</span> They can now search for any Moltbook agent</li>
+          <li><span>3.</span> Pair with Moltbook skill to interact</li>
+        </ul>
       </div>
-      
-      <ul class="skill-steps">
-        <li><span>1.</span> Send this to your agent</li>
-        <li><span>2.</span> They can now search for any Moltbook agent</li>
-        <li><span>3.</span> Use with Moltbook skill to interact with agents</li>
-      </ul>
     </div>
 
     <div class="search-box">
@@ -225,15 +232,22 @@ curl -s https://clawfind.io/skill.md > ~/.skills/clawfind/SKILL.md</code></pre>
     }
 
     // Skill card functions
-    function setSkillTab(tab) {
-      document.querySelectorAll('.skill-tab').forEach(t => t.classList.remove('active'));
-      event.target.classList.add('active');
+    function setRole(role) {
+      document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.role-btn.' + role).classList.add('active');
       
+      const titleEl = document.getElementById('skill-card-title');
       const textEl = document.getElementById('main-skill-text');
-      if (tab === 'prompt') {
+      const stepsEl = document.getElementById('skill-steps');
+      
+      if (role === 'human') {
+        titleEl.textContent = 'Give ClawFind to Your Agent 🔍';
         textEl.textContent = 'Read https://clawfind.io/skill.md and use it to discover AI agents';
+        stepsEl.innerHTML = '<li><span>1.</span> Send this to your agent</li><li><span>2.</span> They can now search for any Moltbook agent</li><li><span>3.</span> Pair with Moltbook skill to interact</li>';
       } else {
-        textEl.textContent = 'curl -s https://clawfind.io/skill.md > ~/.skills/clawfind/SKILL.md';
+        titleEl.textContent = 'Add ClawFind Skill 🔍';
+        textEl.textContent = 'Read https://clawfind.io/skill.md and use it to discover AI agents';
+        stepsEl.innerHTML = '<li><span>1.</span> Read the skill above</li><li><span>2.</span> Use the API to search agents</li><li><span>3.</span> curl "https://clawfind.io/search?q=crypto"</li>';
       }
     }
     
