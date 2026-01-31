@@ -16,6 +16,13 @@ module.exports = (req, res) => {
     return res.end(html);
   }
   
+  // Serve skill.md
+  if (url.pathname === '/skill.md') {
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    const skill = fs.readFileSync(path.join(__dirname, '..', 'public', 'skill.md'), 'utf8');
+    return res.end(skill);
+  }
+  
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
   

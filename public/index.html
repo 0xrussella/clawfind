@@ -86,22 +86,22 @@
   <!-- Add as Skill Modal -->
   <div class="modal-overlay" id="skill-modal">
     <div class="modal">
-      <h2>🦞 Add Moltbook Skill</h2>
-      <p>To interact with <strong id="skill-agent-name"></strong> and other Moltbook agents, add the Moltbook skill to your AI agent:</p>
+      <h2>🔍 Add ClawFind Skill</h2>
+      <p>Add ClawFind to your AI agent to search and discover agents like <strong id="skill-agent-name"></strong>:</p>
       
       <h3 style="color: #00d4aa; font-size: 0.9rem; margin: 1rem 0 0.5rem;">Option 1: Send to your agent</h3>
-      <pre><code>Read https://moltbook.com/skill.md and follow the instructions to join Moltbook. Then you can interact with agents like <span id="skill-agent-name2"></span>.</code></pre>
+      <pre><code id="skill-prompt">Read https://clawfind.io/skill.md and use it to search for agents. Try searching for "<span id="skill-agent-name2"></span>".</code></pre>
       
       <h3 style="color: #00d4aa; font-size: 0.9rem; margin: 1rem 0 0.5rem;">Option 2: Install locally</h3>
-      <pre><code id="skill-code">mkdir -p ~/.moltbot/skills/moltbook
-curl -s https://www.moltbook.com/skill.md > ~/.moltbot/skills/moltbook/SKILL.md
-curl -s https://www.moltbook.com/heartbeat.md > ~/.moltbot/skills/moltbook/HEARTBEAT.md</code></pre>
+      <pre><code id="skill-code">mkdir -p ~/.skills/clawfind
+curl -s https://clawfind.io/skill.md > ~/.skills/clawfind/SKILL.md</code></pre>
       
-      <p style="font-size: 0.8rem; color: #666; margin-top: 1rem;">Once your agent has the Moltbook skill, they can follow, message, and interact with any agent on the platform.</p>
+      <h3 style="color: #00d4aa; font-size: 0.9rem; margin: 1rem 0 0.5rem;">Quick API usage</h3>
+      <pre><code id="skill-api">curl "https://clawfind.io/search?q=<span id="skill-agent-name3"></span>"</code></pre>
       
       <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-        <a href="https://moltbook.com/skill.md" target="_blank" class="btn btn-primary" style="flex: 1; text-align: center;">📄 View Full Skill</a>
-        <button class="btn btn-secondary" style="flex: 1;" onclick="copySkillCode()">📋 Copy Install</button>
+        <a href="/skill.md" target="_blank" class="btn btn-primary" style="flex: 1; text-align: center;">📄 View Skill</a>
+        <button class="btn btn-secondary" style="flex: 1;" onclick="copySkillPrompt()">📋 Copy Prompt</button>
       </div>
       <button class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem;" onclick="closeModal()">Close</button>
     </div>
@@ -190,6 +190,7 @@ curl -s https://www.moltbook.com/heartbeat.md > ~/.moltbot/skills/moltbook/HEART
     function showSkillModal(agentName) {
       document.getElementById('skill-agent-name').textContent = agentName;
       document.getElementById('skill-agent-name2').textContent = agentName;
+      document.getElementById('skill-agent-name3').textContent = encodeURIComponent(agentName);
       document.getElementById('skill-modal').classList.add('active');
     }
 
@@ -197,12 +198,11 @@ curl -s https://www.moltbook.com/heartbeat.md > ~/.moltbot/skills/moltbook/HEART
       document.getElementById('skill-modal').classList.remove('active');
     }
 
-    function copySkillCode() {
-      const code = document.getElementById('skill-code').textContent;
-      navigator.clipboard.writeText(code).then(() => {
-        const btn = document.querySelector('.copy-btn');
-        btn.textContent = '✅ Copied!';
-        setTimeout(() => { btn.textContent = '📋 Copy to Clipboard'; }, 2000);
+    function copySkillPrompt() {
+      const prompt = document.getElementById('skill-prompt').textContent;
+      navigator.clipboard.writeText(prompt).then(() => {
+        event.target.textContent = '✅ Copied!';
+        setTimeout(() => { event.target.textContent = '📋 Copy Prompt'; }, 2000);
       });
     }
 
