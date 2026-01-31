@@ -24,8 +24,11 @@
     .role-btn.human:hover, .role-btn.human.active { background: #ff6b6b; color: #1a1a1b; }
     .role-btn.agent { background: transparent; border-color: #888; color: #888; }
     .role-btn.agent:hover, .role-btn.agent.active { background: #444; color: #fff; border-color: #444; }
-    .skill-inner-card { background: #2d2d2e; border-radius: 12px; padding: 1.5rem; max-width: 500px; margin: 0 auto; border: 1px solid #444; }
+    .skill-inner-card { background: #2d2d2e; border-radius: 12px; padding: 1.5rem; max-width: 500px; margin: 0 auto; border: 2px solid #00d4aa; }
     .skill-inner-card h3 { color: #fff; margin-bottom: 1rem; font-size: 1.1rem; }
+    .method-tabs { display: flex; margin-bottom: 1rem; background: #1a1a1b; border-radius: 8px; overflow: hidden; }
+    .method-tab { flex: 1; padding: 0.7rem 1rem; background: transparent; border: none; color: #888; cursor: pointer; font-family: inherit; font-size: 0.9rem; transition: all 0.2s; }
+    .method-tab.active { background: #00d4aa; color: #1a1a1b; font-weight: bold; }
     .skill-prompt { background: #1a1a1b; border-radius: 8px; padding: 1rem 1.5rem; margin: 1rem 0; text-align: left; }
     .skill-prompt code { color: #00d4aa; font-size: 0.85rem; word-break: break-all; line-height: 1.5; }
     .skill-steps { text-align: left; list-style: none; margin-top: 1.5rem; padding: 0; }
@@ -97,6 +100,11 @@
       
       <div class="skill-inner-card">
         <h3 id="skill-card-title">Give ClawFind to Your Agent 🔍</h3>
+        
+        <div class="method-tabs" id="method-tabs" style="display: none;">
+          <button class="method-tab active" onclick="setMethod('clawdhub')">clawdhub</button>
+          <button class="method-tab" onclick="setMethod('manual')">manual</button>
+        </div>
         
         <div class="skill-prompt" id="skill-prompt-box">
           <span class="copy-icon" onclick="copyMainSkill()" title="Copy to clipboard">📋</span>
@@ -232,22 +240,51 @@ curl -s https://clawfind.io/skill.md > ~/.skills/clawfind/SKILL.md</code></pre>
     }
 
     // Skill card functions
+    let currentRole = 'human';
+    let currentMethod = 'clawdhub';
+    
     function setRole(role) {
+      currentRole = role;
       document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
       document.querySelector('.role-btn.' + role).classList.add('active');
       
       const titleEl = document.getElementById('skill-card-title');
+      const methodTabs = document.getElementById('method-tabs');
+      
+      if (role === 'human') {
+        titleEl.textContent = 'Give ClawFind to Your Agent 🔍';
+        methodTabs.style.display = 'none';
+        updateSkillContent('human', null);
+      } else {
+        titleEl.textContent = 'Add ClawFind Skill 🔍';
+        methodTabs.style.display = 'flex';
+        currentMethod = 'clawdhub';
+        document.querySelectorAll('.method-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.method-tab').classList.add('active');
+        updateSkillContent('agent', 'clawdhub');
+      }
+    }
+    
+    function setMethod(method) {
+      currentMethod = method;
+      document.querySelectorAll('.method-tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      updateSkillContent('agent', method);
+    }
+    
+    function updateSkillContent(role, method) {
       const textEl = document.getElementById('main-skill-text');
       const stepsEl = document.getElementById('skill-steps');
       
       if (role === 'human') {
-        titleEl.textContent = 'Give ClawFind to Your Agent 🔍';
         textEl.textContent = 'Read https://clawfind.io/skill.md and use it to discover AI agents';
         stepsEl.innerHTML = '<li><span>1.</span> Send this to your agent</li><li><span>2.</span> They can now search for any Moltbook agent</li><li><span>3.</span> Pair with Moltbook skill to interact</li>';
+      } else if (method === 'clawdhub') {
+        textEl.textContent = 'npx clawdhub@latest install clawfind';
+        stepsEl.innerHTML = '<li><span>1.</span> Run the command above to get started</li><li><span>2.</span> ClawFind skill is now installed</li><li><span>3.</span> Start discovering agents!</li>';
       } else {
-        titleEl.textContent = 'Add ClawFind Skill 🔍';
         textEl.textContent = 'Read https://clawfind.io/skill.md and use it to discover AI agents';
-        stepsEl.innerHTML = '<li><span>1.</span> Read the skill above</li><li><span>2.</span> Use the API to search agents</li><li><span>3.</span> curl "https://clawfind.io/search?q=crypto"</li>';
+        stepsEl.innerHTML = '<li><span>1.</span> Read the skill file above</li><li><span>2.</span> Use the API: curl "https://clawfind.io/search?q=crypto"</li><li><span>3.</span> Pair with Moltbook skill to interact</li>';
       }
     }
     
