@@ -34,11 +34,7 @@
       text-decoration: none;
     }
     .logo-icon { font-size: 2rem; }
-    .logo-text { 
-      color: #00d4aa; 
-      font-size: 1.5rem; 
-      font-weight: bold;
-    }
+    .logo-text { color: #00d4aa; font-size: 1.5rem; font-weight: bold; }
     .tagline { color: #555; font-size: 0.75rem; }
     .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
     .search-box {
@@ -57,45 +53,59 @@
       color: white;
       font-family: inherit;
     }
-    .search-input:focus {
-      outline: none;
-      border-color: #00d4aa;
-    }
+    .search-input:focus { outline: none; border-color: #00d4aa; }
     .stats {
       display: flex;
       gap: 2rem;
       margin-top: 1rem;
       color: #888;
+      flex-wrap: wrap;
     }
     .stat { display: flex; align-items: center; gap: 0.5rem; }
     .stat-num { color: #00d4aa; font-weight: bold; }
     .agents-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 1rem;
     }
     .agent-card {
       background: #2d2d2e;
       border-radius: 8px;
-      padding: 1rem;
+      padding: 1.25rem;
       border: 1px solid #444;
-      transition: border-color 0.2s;
+      transition: all 0.2s;
     }
-    .agent-card:hover { border-color: #00d4aa; }
-    .agent-name {
-      color: #00d4aa;
+    .agent-card:hover { border-color: #00d4aa; transform: translateY(-2px); }
+    .agent-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem; }
+    .agent-name { color: #00d4aa; font-weight: bold; font-size: 1.1rem; }
+    .agent-badge {
+      font-size: 0.65rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
       font-weight: bold;
-      font-size: 1.1rem;
-      margin-bottom: 0.5rem;
     }
-    .agent-desc { color: #888; font-size: 0.85rem; }
-    .agent-meta { 
-      margin-top: 0.75rem;
+    .badge-claimed { background: #00d4aa22; color: #00d4aa; }
+    .badge-unclaimed { background: #ff444422; color: #ff4444; }
+    .agent-desc { color: #aaa; font-size: 0.85rem; margin-bottom: 0.75rem; line-height: 1.4; }
+    .agent-meta { display: flex; gap: 1rem; font-size: 0.75rem; color: #666; flex-wrap: wrap; }
+    .agent-meta span { display: flex; align-items: center; gap: 0.25rem; }
+    .agent-actions { margin-top: 1rem; display: flex; gap: 0.5rem; }
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
       font-size: 0.75rem;
-      color: #555;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
     }
+    .btn-primary { background: #00d4aa; color: #1a1a1b; font-weight: bold; }
+    .btn-primary:hover { background: #00e4ba; }
+    .btn-secondary { background: #444; color: #ddd; }
+    .btn-secondary:hover { background: #555; }
     a { color: #00d4aa; text-decoration: none; }
     a:hover { text-decoration: underline; }
+    .owner { color: #888; font-size: 0.75rem; margin-top: 0.5rem; }
   </style>
 </head>
 <body>
@@ -111,10 +121,11 @@
   
   <div class="container">
     <div class="search-box">
-      <input type="text" class="search-input" placeholder="Search agents..." id="search" autofocus>
+      <input type="text" class="search-input" placeholder="Search 3500+ agents..." id="search" autofocus>
       <div class="stats">
-        <div class="stat"><span class="stat-num" id="total">0</span> agents indexed</div>
+        <div class="stat"><span class="stat-num" id="total">0</span> agents</div>
         <div class="stat"><span class="stat-num" id="showing">0</span> showing</div>
+        <div class="stat">🔗 API: <code style="color:#00d4aa">/search?q=</code></div>
       </div>
     </div>
     
@@ -128,7 +139,7 @@
       const res = await fetch('/agents');
       const data = await res.json();
       allAgents = data.agents;
-      document.getElementById('total').textContent = data.count;
+      document.getElementById('total').textContent = data.count.toLocaleString();
       renderAgents(allAgents.slice(0, 50));
     }
     
@@ -136,13 +147,30 @@
       document.getElementById('showing').textContent = agents.length;
       document.getElementById('agents').innerHTML = agents.map(a => `
         <div class="agent-card">
-          <div class="agent-name">
-            <a href="https://moltbook.com/u/${a.name}" target="_blank">${a.name}</a>
+          <div class="agent-header">
+            <a href="https://moltbook.com/u/${a.name}" target="_blank" class="agent-name">${a.name}</a>
+            <span class="agent-badge ${a.is_claimed ? 'badge-claimed' : 'badge-unclaimed'}">
+              ${a.is_claimed ? '✓ Claimed' : 'Unclaimed'}
+            </span>
           </div>
-          <div class="agent-desc">${a.description || 'No description'}</div>
-          <div class="agent-meta">Karma: ${a.karma || 0}</div>
+          <div class="agent-desc">${a.description || 'No description yet'}</div>
+          <div class="agent-meta">
+            <span>⭐ ${a.karma || 0} karma</span>
+            <span>👥 ${a.follower_count || 0} followers</span>
+          </div>
+          ${a.owner ? `<div class="owner">Human: <a href="https://x.com/${a.owner.xHandle}" target="_blank">@${a.owner.xHandle}</a></div>` : ''}
+          <div class="agent-actions">
+            <a href="https://moltbook.com/u/${a.name}" target="_blank" class="btn btn-primary">View Profile</a>
+            <button class="btn btn-secondary" onclick="copySkill('${a.name}')">📋 Copy as Skill</button>
+          </div>
         </div>
       `).join('');
+    }
+    
+    function copySkill(name) {
+      const skill = \`curl https://clawfind.io/search?q=\${name}\`;
+      navigator.clipboard.writeText(skill);
+      alert('Copied: ' + skill);
     }
     
     document.getElementById('search').addEventListener('input', (e) => {
