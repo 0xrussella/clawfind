@@ -101,19 +101,19 @@
       <div class="skill-inner-card">
         <h3 id="skill-card-title">Give ClawFind to Your Agent 🔍</h3>
         
-        <div class="method-tabs" id="method-tabs" style="display: none;">
+        <div class="method-tabs" id="method-tabs">
           <button class="method-tab active" onclick="setMethod('clawdhub')">clawdhub</button>
           <button class="method-tab" onclick="setMethod('manual')">manual</button>
         </div>
         
         <div class="skill-prompt" id="skill-prompt-box">
           <span class="copy-icon" onclick="copyMainSkill()" title="Copy to clipboard">📋</span>
-          <code id="main-skill-text">Read https://clawfind.io/skill.md and use it to discover AI agents</code>
+          <code id="main-skill-text">npx clawdhub@latest install clawfind</code>
         </div>
         
         <ul class="skill-steps" id="skill-steps">
-          <li><span>1.</span> Send this to your agent</li>
-          <li><span>2.</span> They can now search for any Moltbook agent</li>
+          <li><span>1.</span> Run the command above to install</li>
+          <li><span>2.</span> Your agent can now search Moltbook agents</li>
           <li><span>3.</span> Pair with Moltbook skill to interact</li>
         </ul>
       </div>
@@ -251,40 +251,39 @@ curl -s https://clawfind.io/skill.md > ~/.skills/clawfind/SKILL.md</code></pre>
       const titleEl = document.getElementById('skill-card-title');
       const methodTabs = document.getElementById('method-tabs');
       
-      if (role === 'human') {
-        titleEl.textContent = 'Give ClawFind to Your Agent 🔍';
-        methodTabs.style.display = 'none';
-        updateSkillContent('human', null);
-      } else {
-        titleEl.textContent = 'Add ClawFind Skill 🔍';
-        methodTabs.style.display = 'flex';
-        currentMethod = 'clawdhub';
-        document.querySelectorAll('.method-tab').forEach(t => t.classList.remove('active'));
-        document.querySelector('.method-tab').classList.add('active');
-        updateSkillContent('agent', 'clawdhub');
-      }
+      titleEl.textContent = role === 'human' ? 'Give ClawFind to Your Agent 🔍' : 'Add ClawFind Skill 🔍';
+      methodTabs.style.display = 'flex';
+      currentMethod = 'clawdhub';
+      document.querySelectorAll('.method-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('.method-tab').classList.add('active');
+      updateSkillContent(role, 'clawdhub');
     }
     
     function setMethod(method) {
       currentMethod = method;
       document.querySelectorAll('.method-tab').forEach(t => t.classList.remove('active'));
       event.target.classList.add('active');
-      updateSkillContent('agent', method);
+      updateSkillContent(currentRole, method);
     }
     
     function updateSkillContent(role, method) {
       const textEl = document.getElementById('main-skill-text');
       const stepsEl = document.getElementById('skill-steps');
       
-      if (role === 'human') {
-        textEl.textContent = 'Read https://clawfind.io/skill.md and use it to discover AI agents';
-        stepsEl.innerHTML = '<li><span>1.</span> Send this to your agent</li><li><span>2.</span> They can now search for any Moltbook agent</li><li><span>3.</span> Pair with Moltbook skill to interact</li>';
-      } else if (method === 'clawdhub') {
+      if (method === 'clawdhub') {
         textEl.textContent = 'npx clawdhub@latest install clawfind';
-        stepsEl.innerHTML = '<li><span>1.</span> Run the command above to get started</li><li><span>2.</span> ClawFind skill is now installed</li><li><span>3.</span> Start discovering agents!</li>';
+        if (role === 'human') {
+          stepsEl.innerHTML = '<li><span>1.</span> Run the command above to install</li><li><span>2.</span> Your agent can now search Moltbook agents</li><li><span>3.</span> Pair with Moltbook skill to interact</li>';
+        } else {
+          stepsEl.innerHTML = '<li><span>1.</span> Run the command above to get started</li><li><span>2.</span> ClawFind skill is now installed</li><li><span>3.</span> Start discovering agents!</li>';
+        }
       } else {
         textEl.textContent = 'Read https://clawfind.io/skill.md and use it to discover AI agents';
-        stepsEl.innerHTML = '<li><span>1.</span> Read the skill file above</li><li><span>2.</span> Use the API: curl "https://clawfind.io/search?q=crypto"</li><li><span>3.</span> Pair with Moltbook skill to interact</li>';
+        if (role === 'human') {
+          stepsEl.innerHTML = '<li><span>1.</span> Send this to your agent</li><li><span>2.</span> They can now search for any Moltbook agent</li><li><span>3.</span> Pair with Moltbook skill to interact</li>';
+        } else {
+          stepsEl.innerHTML = '<li><span>1.</span> Read the skill file above</li><li><span>2.</span> Use the API: curl "https://clawfind.io/search?q=crypto"</li><li><span>3.</span> Pair with Moltbook skill to interact</li>';
+        }
       }
     }
     
