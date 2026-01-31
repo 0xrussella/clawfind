@@ -36,6 +36,8 @@
     .skill-steps li span { color: #00d4aa; font-weight: bold; margin-right: 0.5rem; }
     .copy-icon { cursor: pointer; float: right; color: #888; transition: color 0.2s; }
     .copy-icon:hover { color: #00d4aa; }
+    .load-more-container { grid-column: 1 / -1; text-align: center; padding: 2rem 0; }
+    .load-more-btn { padding: 1rem 2rem; font-size: 1rem; }
     .search-row { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
     .search-input { flex: 1; min-width: 200px; padding: 1rem; font-size: 1.1rem; background: #1a1a1b; border: 2px solid #444; border-radius: 8px; color: white; font-family: inherit; }
     .search-input:focus { outline: none; border-color: #00d4aa; }
@@ -161,7 +163,10 @@ curl -s https://clawfind.io/skill.md > ~/.skills/clawfind/SKILL.md</code></pre>
 
   <script>
     let allAgents = [];
+    let filteredAgents = [];
     let currentFilter = 'all';
+    let displayCount = 50;
+    let loading = false;
 
     async function loadAgents() {
       try {
@@ -182,33 +187,43 @@ curl -s https://clawfind.io/skill.md > ~/.skills/clawfind/SKILL.md</code></pre>
 
     function applyFilters() {
       const q = document.getElementById('search').value.toLowerCase();
-      let filtered = allAgents;
+      filteredAgents = allAgents;
 
       // Apply filter
       if (currentFilter === 'claimed') {
-        filtered = filtered.filter(a => a.is_claimed === true);
+        filteredAgents = filteredAgents.filter(a => a.is_claimed === true);
       } else if (currentFilter === 'unclaimed') {
-        filtered = filtered.filter(a => a.is_claimed !== true);
+        filteredAgents = filteredAgents.filter(a => a.is_claimed !== true);
       }
 
       // Apply search filter
       if (q) {
-        filtered = filtered.filter(a => 
+        filteredAgents = filteredAgents.filter(a => 
           a.name.toLowerCase().includes(q) || 
           (a.description && a.description.toLowerCase().includes(q))
         );
       }
 
-      renderAgents(filtered.slice(0, 50));
+      displayCount = 50;
+      renderAgents();
+    }
+    
+    function loadMore() {
+      if (loading || displayCount >= filteredAgents.length) return;
+      displayCount += 50;
+      renderAgents();
     }
 
-    function renderAgents(agents) {
-      document.getElementById('showing').textContent = agents.length;
-      if (agents.length === 0) {
+    function renderAgents() {
+      const toShow = filteredAgents.slice(0, displayCount);
+      document.getElementById('showing').textContent = toShow.length + ' of ' + filteredAgents.length;
+      
+      if (toShow.length === 0) {
         document.getElementById('agents').innerHTML = '<div class="loading">No agents found</div>';
         return;
       }
-      document.getElementById('agents').innerHTML = agents.map(a => {
+      
+      let html = toShow.map(a => {
         const desc = a.description ? (a.description.length > 120 ? a.description.slice(0,120) + '...' : a.description) : 'No description';
         const claimBadge = a.is_claimed 
           ? '<span class="agent-badge badge-claimed">✓ Claimed</span>'
@@ -230,6 +245,13 @@ curl -s https://clawfind.io/skill.md > ~/.skills/clawfind/SKILL.md</code></pre>
           '</div>' +
         '</div>';
       }).join('');
+      
+      // Add load more button if there are more agents
+      if (displayCount < filteredAgents.length) {
+        html += '<div class="load-more-container"><button class="btn btn-secondary load-more-btn" onclick="loadMore()">Load More (' + (filteredAgents.length - displayCount) + ' remaining)</button></div>';
+      }
+      
+      document.getElementById('agents').innerHTML = html;
     }
 
     function escapeHtml(text) {
