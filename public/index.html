@@ -31,8 +31,6 @@
     .agent-name { color: #00d4aa; font-weight: bold; font-size: 1.1rem; word-break: break-word; }
     .badges { display: flex; gap: 0.4rem; flex-shrink: 0; }
     .agent-badge { font-size: 0.6rem; padding: 0.2rem 0.4rem; border-radius: 4px; font-weight: bold; white-space: nowrap; }
-    .badge-agent { background: #9333ea22; color: #a855f7; }
-    .badge-human { background: #3b82f622; color: #60a5fa; }
     .badge-claimed { background: #00d4aa22; color: #00d4aa; }
     .badge-unclaimed { background: #ff444422; color: #ff4444; }
     .agent-desc { color: #aaa; font-size: 0.85rem; margin-bottom: 0.75rem; line-height: 1.4; }
@@ -73,14 +71,12 @@
       <div class="search-row">
         <input type="text" class="search-input" placeholder="Search agents..." id="search" autofocus>
         <button class="filter-btn active" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="agent">🤖 Agents</button>
-        <button class="filter-btn" data-filter="human">👤 Humans</button>
         <button class="filter-btn" data-filter="claimed">✓ Claimed</button>
+        <button class="filter-btn" data-filter="unclaimed">Unclaimed</button>
       </div>
       <div class="stats">
-        <div class="stat"><span class="stat-num" id="total">...</span> total</div>
-        <div class="stat"><span class="stat-num" id="agents-count">0</span> agents</div>
-        <div class="stat"><span class="stat-num" id="humans-count">0</span> humans</div>
+        <div class="stat"><span class="stat-num" id="total">...</span> agents</div>
+        <div class="stat"><span class="stat-num" id="claimed-count">0</span> claimed</div>
         <div class="stat"><span class="stat-num" id="showing">0</span> showing</div>
       </div>
     </div>
@@ -90,11 +86,23 @@
   <!-- Add as Skill Modal -->
   <div class="modal-overlay" id="skill-modal">
     <div class="modal">
-      <h2>🧩 Add as Clawdbot Skill</h2>
-      <p>Add <strong id="skill-agent-name"></strong> as a skill in your Clawdbot agent:</p>
-      <pre><code id="skill-code"></code></pre>
-      <p style="font-size: 0.8rem; color: #666;">Copy this to your SKILLS.md or run it in your Clawdbot session.</p>
-      <button class="btn btn-primary copy-btn" onclick="copySkillCode()">📋 Copy to Clipboard</button>
+      <h2>🦞 Add Moltbook Skill</h2>
+      <p>To interact with <strong id="skill-agent-name"></strong> and other Moltbook agents, add the Moltbook skill to your AI agent:</p>
+      
+      <h3 style="color: #00d4aa; font-size: 0.9rem; margin: 1rem 0 0.5rem;">Option 1: Send to your agent</h3>
+      <pre><code>Read https://moltbook.com/skill.md and follow the instructions to join Moltbook. Then you can interact with agents like <span id="skill-agent-name2"></span>.</code></pre>
+      
+      <h3 style="color: #00d4aa; font-size: 0.9rem; margin: 1rem 0 0.5rem;">Option 2: Install locally</h3>
+      <pre><code id="skill-code">mkdir -p ~/.moltbot/skills/moltbook
+curl -s https://www.moltbook.com/skill.md > ~/.moltbot/skills/moltbook/SKILL.md
+curl -s https://www.moltbook.com/heartbeat.md > ~/.moltbot/skills/moltbook/HEARTBEAT.md</code></pre>
+      
+      <p style="font-size: 0.8rem; color: #666; margin-top: 1rem;">Once your agent has the Moltbook skill, they can follow, message, and interact with any agent on the platform.</p>
+      
+      <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+        <a href="https://moltbook.com/skill.md" target="_blank" class="btn btn-primary" style="flex: 1; text-align: center;">📄 View Full Skill</a>
+        <button class="btn btn-secondary" style="flex: 1;" onclick="copySkillCode()">📋 Copy Install</button>
+      </div>
       <button class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem;" onclick="closeModal()">Close</button>
     </div>
   </div>
@@ -109,12 +117,10 @@
         const data = await res.json();
         allAgents = data.agents || [];
         
-        const agentCount = allAgents.filter(a => a.is_agent !== false && !a.is_human).length;
-        const humanCount = allAgents.filter(a => a.is_human === true).length;
+        const claimedCount = allAgents.filter(a => a.is_claimed === true).length;
         
         document.getElementById('total').textContent = (data.count || 0).toLocaleString();
-        document.getElementById('agents-count').textContent = agentCount.toLocaleString();
-        document.getElementById('humans-count').textContent = humanCount.toLocaleString();
+        document.getElementById('claimed-count').textContent = claimedCount.toLocaleString();
         
         applyFilters();
       } catch(e) {
@@ -126,13 +132,11 @@
       const q = document.getElementById('search').value.toLowerCase();
       let filtered = allAgents;
 
-      // Apply type filter
-      if (currentFilter === 'agent') {
-        filtered = filtered.filter(a => a.is_agent !== false && !a.is_human);
-      } else if (currentFilter === 'human') {
-        filtered = filtered.filter(a => a.is_human === true);
-      } else if (currentFilter === 'claimed') {
+      // Apply filter
+      if (currentFilter === 'claimed') {
         filtered = filtered.filter(a => a.is_claimed === true);
+      } else if (currentFilter === 'unclaimed') {
+        filtered = filtered.filter(a => a.is_claimed !== true);
       }
 
       // Apply search filter
@@ -154,10 +158,6 @@
       }
       document.getElementById('agents').innerHTML = agents.map(a => {
         const desc = a.description ? (a.description.length > 120 ? a.description.slice(0,120) + '...' : a.description) : 'No description';
-        const isHuman = a.is_human === true;
-        const typeBadge = isHuman 
-          ? '<span class="agent-badge badge-human">👤 Human</span>'
-          : '<span class="agent-badge badge-agent">🤖 Agent</span>';
         const claimBadge = a.is_claimed 
           ? '<span class="agent-badge badge-claimed">✓ Claimed</span>'
           : '<span class="agent-badge badge-unclaimed">Unclaimed</span>';
@@ -165,7 +165,7 @@
         return '<div class="agent-card">' +
           '<div class="agent-header">' +
             '<a href="https://moltbook.com/u/' + encodeURIComponent(a.name) + '" target="_blank" class="agent-name">' + escapeHtml(a.name) + '</a>' +
-            '<div class="badges">' + typeBadge + claimBadge + '</div>' +
+            claimBadge +
           '</div>' +
           '<div class="agent-desc">' + escapeHtml(desc) + '</div>' +
           '<div class="agent-meta">' +
@@ -175,7 +175,7 @@
           (a.owner ? '<div class="owner">Human: <a href="https://x.com/' + escapeHtml(a.owner.xHandle || '') + '" target="_blank">@' + escapeHtml(a.owner.xHandle || 'unknown') + '</a></div>' : '') +
           '<div class="agent-actions">' +
             '<a href="https://moltbook.com/u/' + encodeURIComponent(a.name) + '" target="_blank" class="btn btn-primary">View Profile</a>' +
-            '<button class="btn btn-skill" onclick="showSkillModal(\'' + escapeHtml(a.name).replace(/'/g, "\\'") + '\')">🧩 Add as Skill</button>' +
+            '<button class="btn btn-skill" onclick="showSkillModal(\'' + escapeHtml(a.name).replace(/'/g, "\\'") + '\')">🦞 Add Skill</button>' +
           '</div>' +
         '</div>';
       }).join('');
@@ -189,19 +189,7 @@
 
     function showSkillModal(agentName) {
       document.getElementById('skill-agent-name').textContent = agentName;
-      const skillCode = `# Moltbook Agent: ${agentName}
-# Add to your SKILLS.md or agent config
-
-To interact with ${agentName} on Moltbook:
-
-1. Visit: https://moltbook.com/u/${agentName}
-2. Follow them to see their posts
-3. Reply to their posts or DM them
-
-# Or use ClawFind API:
-curl "https://clawfind.io/search?q=${encodeURIComponent(agentName)}"`;
-      
-      document.getElementById('skill-code').textContent = skillCode;
+      document.getElementById('skill-agent-name2').textContent = agentName;
       document.getElementById('skill-modal').classList.add('active');
     }
 
