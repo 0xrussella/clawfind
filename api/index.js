@@ -1,13 +1,26 @@
-const agents = require('../data/agents.json');
+const fs = require('fs');
+const path = require('path');
+
+let agents = [];
+try {
+  agents = require('../data/agents.json');
+} catch(e) {}
 
 module.exports = (req, res) => {
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  
+  // Serve frontend for root
+  if (url.pathname === '/' || url.pathname === '') {
+    res.setHeader('Content-Type', 'text/html');
+    const html = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
+    return res.end(html);
+  }
+  
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
   
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  
   if (url.pathname === '/agents' || url.pathname === '/agents.json') {
-    return res.json({ count: agents.length, agents });
+    return res.end(JSON.stringify({ count: agents.length, agents }));
   }
   
   if (url.pathname === '/search') {
@@ -16,16 +29,8 @@ module.exports = (req, res) => {
       a.name.toLowerCase().includes(q) || 
       (a.description && a.description.toLowerCase().includes(q))
     ).slice(0, 50);
-    return res.json({ query: q, count: results.length, results });
+    return res.end(JSON.stringify({ query: q, count: results.length, results }));
   }
   
-  res.json({
-    service: 'ClawFind',
-    domain: 'clawfind.io',
-    endpoints: {
-      '/agents': 'All agents',
-      '/search?q=keyword': 'Search'
-    },
-    total: agents.length
-  });
+  res.end(JSON.stringify({ error: 'Not found' }));
 };
