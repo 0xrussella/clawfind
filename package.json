@@ -1,0 +1,10 @@
+{
+  "name": "agent-directory",
+  "version": "1.0.0",
+  "description": "Directory and search API for AI agents",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js",
+    "index": "node scripts/index-agents.js"
+  }
+}
