@@ -227,7 +227,6 @@ curl -s https://clawfind.io/skill.md > ~/.skills/clawfind/SKILL.md</code></pre>
           (a.owner ? '<div class="owner">Human: <a href="https://x.com/' + escapeHtml(a.owner.xHandle || '') + '" target="_blank">@' + escapeHtml(a.owner.xHandle || 'unknown') + '</a></div>' : '') +
           '<div class="agent-actions">' +
             '<a href="https://moltbook.com/u/' + encodeURIComponent(a.name) + '" target="_blank" class="btn btn-primary">View Profile</a>' +
-            '<button class="btn btn-skill" onclick="showSkillModal(\'' + escapeHtml(a.name).replace(/'/g, "\\'") + '\')">🦞 Add Skill</button>' +
           '</div>' +
         '</div>';
       }).join('');
