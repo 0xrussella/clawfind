@@ -15,30 +15,50 @@
     .tagline { color: #555; font-size: 0.75rem; }
     .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
     .search-box { background: #2d2d2e; border-radius: 8px; padding: 2rem; margin-bottom: 2rem; }
-    .search-input { width: 100%; padding: 1rem; font-size: 1.1rem; background: #1a1a1b; border: 2px solid #444; border-radius: 8px; color: white; font-family: inherit; }
+    .search-row { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+    .search-input { flex: 1; min-width: 200px; padding: 1rem; font-size: 1.1rem; background: #1a1a1b; border: 2px solid #444; border-radius: 8px; color: white; font-family: inherit; }
     .search-input:focus { outline: none; border-color: #00d4aa; }
+    .filter-btn { padding: 0.75rem 1rem; font-size: 0.85rem; background: #444; border: none; border-radius: 6px; color: #ddd; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+    .filter-btn.active { background: #00d4aa; color: #1a1a1b; font-weight: bold; }
+    .filter-btn:hover:not(.active) { background: #555; }
     .stats { display: flex; gap: 2rem; margin-top: 1rem; color: #888; flex-wrap: wrap; }
     .stat { display: flex; align-items: center; gap: 0.5rem; }
     .stat-num { color: #00d4aa; font-weight: bold; }
     .agents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
     .agent-card { background: #2d2d2e; border-radius: 8px; padding: 1.25rem; border: 1px solid #444; transition: all 0.2s; }
     .agent-card:hover { border-color: #00d4aa; transform: translateY(-2px); }
-    .agent-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem; }
-    .agent-name { color: #00d4aa; font-weight: bold; font-size: 1.1rem; }
-    .agent-badge { font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold; }
+    .agent-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem; gap: 0.5rem; }
+    .agent-name { color: #00d4aa; font-weight: bold; font-size: 1.1rem; word-break: break-word; }
+    .badges { display: flex; gap: 0.4rem; flex-shrink: 0; }
+    .agent-badge { font-size: 0.6rem; padding: 0.2rem 0.4rem; border-radius: 4px; font-weight: bold; white-space: nowrap; }
+    .badge-agent { background: #9333ea22; color: #a855f7; }
+    .badge-human { background: #3b82f622; color: #60a5fa; }
     .badge-claimed { background: #00d4aa22; color: #00d4aa; }
     .badge-unclaimed { background: #ff444422; color: #ff4444; }
     .agent-desc { color: #aaa; font-size: 0.85rem; margin-bottom: 0.75rem; line-height: 1.4; }
     .agent-meta { display: flex; gap: 1rem; font-size: 0.75rem; color: #666; flex-wrap: wrap; }
-    .agent-actions { margin-top: 1rem; display: flex; gap: 0.5rem; }
-    .btn { padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.75rem; font-family: inherit; cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; display: inline-block; }
+    .agent-actions { margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .btn { padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.75rem; font-family: inherit; cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; }
     .btn-primary { background: #00d4aa; color: #1a1a1b; font-weight: bold; }
     .btn-primary:hover { background: #00e4ba; }
     .btn-secondary { background: #444; color: #ddd; }
     .btn-secondary:hover { background: #555; }
+    .btn-skill { background: #9333ea; color: white; }
+    .btn-skill:hover { background: #a855f7; }
     a { color: #00d4aa; text-decoration: none; }
     .owner { color: #888; font-size: 0.75rem; margin-top: 0.5rem; }
     .loading { text-align: center; padding: 2rem; color: #888; }
+    
+    /* Modal styles */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: #2d2d2e; border-radius: 12px; padding: 2rem; max-width: 500px; width: 90%; border: 2px solid #00d4aa; }
+    .modal h2 { color: #00d4aa; margin-bottom: 1rem; }
+    .modal pre { background: #1a1a1b; padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: 0.8rem; margin: 1rem 0; }
+    .modal code { color: #00d4aa; }
+    .modal p { color: #aaa; margin-bottom: 1rem; line-height: 1.5; }
+    .modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: #888; font-size: 1.5rem; cursor: pointer; }
+    .copy-btn { width: 100%; margin-top: 1rem; }
   </style>
 </head>
 <body>
@@ -50,27 +70,82 @@
   </header>
   <div class="container">
     <div class="search-box">
-      <input type="text" class="search-input" placeholder="Search 3500+ agents..." id="search" autofocus>
+      <div class="search-row">
+        <input type="text" class="search-input" placeholder="Search agents..." id="search" autofocus>
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="agent">🤖 Agents</button>
+        <button class="filter-btn" data-filter="human">👤 Humans</button>
+        <button class="filter-btn" data-filter="claimed">✓ Claimed</button>
+      </div>
       <div class="stats">
-        <div class="stat"><span class="stat-num" id="total">...</span> agents</div>
+        <div class="stat"><span class="stat-num" id="total">...</span> total</div>
+        <div class="stat"><span class="stat-num" id="agents-count">0</span> agents</div>
+        <div class="stat"><span class="stat-num" id="humans-count">0</span> humans</div>
         <div class="stat"><span class="stat-num" id="showing">0</span> showing</div>
       </div>
     </div>
     <div id="agents" class="agents-grid"><div class="loading">Loading agents...</div></div>
   </div>
+
+  <!-- Add as Skill Modal -->
+  <div class="modal-overlay" id="skill-modal">
+    <div class="modal">
+      <h2>🧩 Add as Clawdbot Skill</h2>
+      <p>Add <strong id="skill-agent-name"></strong> as a skill in your Clawdbot agent:</p>
+      <pre><code id="skill-code"></code></pre>
+      <p style="font-size: 0.8rem; color: #666;">Copy this to your SKILLS.md or run it in your Clawdbot session.</p>
+      <button class="btn btn-primary copy-btn" onclick="copySkillCode()">📋 Copy to Clipboard</button>
+      <button class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem;" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+
   <script>
     let allAgents = [];
+    let currentFilter = 'all';
+
     async function loadAgents() {
       try {
         const res = await fetch('/agents');
         const data = await res.json();
         allAgents = data.agents || [];
+        
+        const agentCount = allAgents.filter(a => a.is_agent !== false && !a.is_human).length;
+        const humanCount = allAgents.filter(a => a.is_human === true).length;
+        
         document.getElementById('total').textContent = (data.count || 0).toLocaleString();
-        renderAgents(allAgents.slice(0, 50));
+        document.getElementById('agents-count').textContent = agentCount.toLocaleString();
+        document.getElementById('humans-count').textContent = humanCount.toLocaleString();
+        
+        applyFilters();
       } catch(e) {
-        document.getElementById('agents').innerHTML = '<div class="loading">Error loading agents: ' + e.message + '</div>';
+        document.getElementById('agents').innerHTML = '<div class="loading">Error: ' + e.message + '</div>';
       }
     }
+
+    function applyFilters() {
+      const q = document.getElementById('search').value.toLowerCase();
+      let filtered = allAgents;
+
+      // Apply type filter
+      if (currentFilter === 'agent') {
+        filtered = filtered.filter(a => a.is_agent !== false && !a.is_human);
+      } else if (currentFilter === 'human') {
+        filtered = filtered.filter(a => a.is_human === true);
+      } else if (currentFilter === 'claimed') {
+        filtered = filtered.filter(a => a.is_claimed === true);
+      }
+
+      // Apply search filter
+      if (q) {
+        filtered = filtered.filter(a => 
+          a.name.toLowerCase().includes(q) || 
+          (a.description && a.description.toLowerCase().includes(q))
+        );
+      }
+
+      renderAgents(filtered.slice(0, 50));
+    }
+
     function renderAgents(agents) {
       document.getElementById('showing').textContent = agents.length;
       if (agents.length === 0) {
@@ -79,30 +154,86 @@
       }
       document.getElementById('agents').innerHTML = agents.map(a => {
         const desc = a.description ? (a.description.length > 120 ? a.description.slice(0,120) + '...' : a.description) : 'No description';
+        const isHuman = a.is_human === true;
+        const typeBadge = isHuman 
+          ? '<span class="agent-badge badge-human">👤 Human</span>'
+          : '<span class="agent-badge badge-agent">🤖 Agent</span>';
+        const claimBadge = a.is_claimed 
+          ? '<span class="agent-badge badge-claimed">✓ Claimed</span>'
+          : '<span class="agent-badge badge-unclaimed">Unclaimed</span>';
+        
         return '<div class="agent-card">' +
           '<div class="agent-header">' +
-            '<a href="https://moltbook.com/u/' + a.name + '" target="_blank" class="agent-name">' + a.name + '</a>' +
-            '<span class="agent-badge ' + (a.is_claimed ? 'badge-claimed' : 'badge-unclaimed') + '">' + (a.is_claimed ? '✓ Claimed' : 'Unclaimed') + '</span>' +
+            '<a href="https://moltbook.com/u/' + encodeURIComponent(a.name) + '" target="_blank" class="agent-name">' + escapeHtml(a.name) + '</a>' +
+            '<div class="badges">' + typeBadge + claimBadge + '</div>' +
           '</div>' +
-          '<div class="agent-desc">' + desc + '</div>' +
+          '<div class="agent-desc">' + escapeHtml(desc) + '</div>' +
           '<div class="agent-meta">' +
             '<span>⭐ ' + (a.karma || 0).toLocaleString() + ' karma</span>' +
             '<span>👥 ' + (a.follower_count || 0) + ' followers</span>' +
           '</div>' +
-          (a.owner ? '<div class="owner">Human: <a href="https://x.com/' + a.owner.xHandle + '" target="_blank">@' + a.owner.xHandle + '</a></div>' : '') +
+          (a.owner ? '<div class="owner">Human: <a href="https://x.com/' + escapeHtml(a.owner.xHandle || '') + '" target="_blank">@' + escapeHtml(a.owner.xHandle || 'unknown') + '</a></div>' : '') +
           '<div class="agent-actions">' +
-            '<a href="https://moltbook.com/u/' + a.name + '" target="_blank" class="btn btn-primary">View Profile</a>' +
+            '<a href="https://moltbook.com/u/' + encodeURIComponent(a.name) + '" target="_blank" class="btn btn-primary">View Profile</a>' +
+            '<button class="btn btn-skill" onclick="showSkillModal(\'' + escapeHtml(a.name).replace(/'/g, "\\'") + '\')">🧩 Add as Skill</button>' +
           '</div>' +
         '</div>';
       }).join('');
     }
-    document.getElementById('search').addEventListener('input', function(e) {
-      const q = e.target.value.toLowerCase();
-      const filtered = allAgents.filter(function(a) {
-        return a.name.toLowerCase().includes(q) || (a.description && a.description.toLowerCase().includes(q));
-      }).slice(0, 50);
-      renderAgents(filtered);
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showSkillModal(agentName) {
+      document.getElementById('skill-agent-name').textContent = agentName;
+      const skillCode = `# Moltbook Agent: ${agentName}
+# Add to your SKILLS.md or agent config
+
+To interact with ${agentName} on Moltbook:
+
+1. Visit: https://moltbook.com/u/${agentName}
+2. Follow them to see their posts
+3. Reply to their posts or DM them
+
+# Or use ClawFind API:
+curl "https://clawfind.io/search?q=${encodeURIComponent(agentName)}"`;
+      
+      document.getElementById('skill-code').textContent = skillCode;
+      document.getElementById('skill-modal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('skill-modal').classList.remove('active');
+    }
+
+    function copySkillCode() {
+      const code = document.getElementById('skill-code').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.textContent = '✅ Copied!';
+        setTimeout(() => { btn.textContent = '📋 Copy to Clipboard'; }, 2000);
+      });
+    }
+
+    // Event listeners
+    document.getElementById('search').addEventListener('input', applyFilters);
+    
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentFilter = this.dataset.filter;
+        applyFilters();
+      });
     });
+
+    document.getElementById('skill-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
     loadAgents();
   </script>
 </body>
